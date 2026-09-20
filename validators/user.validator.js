@@ -11,12 +11,20 @@ export const userRegisterSchema = z
       .string()
       .min(8, "Password must be minimum of 8 letters.")
       .regex(/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/),
-    confirmpassword: z
+    confirmPassword: z
       .string()
       .min(8, "Password must be minimum of 8 letters.")
       .regex(/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/),
   })
-  .refine((data) => data.password === data.confirmpassword, {
+  .refine((data) => data.password === data.confirmPassword, {
     message: "Password and confirm password do not match",
     path: ["confirmpassword"],
-  });
+  })
+  .strict();
+
+export const userLoginSchema = z
+  .object({
+    email: z.email("Invalid email format"),
+    password: z.string(),
+  })
+  .strict();

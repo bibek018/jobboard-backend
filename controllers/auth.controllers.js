@@ -1,20 +1,17 @@
 import { catchAsync } from "../utils/catchAsync.js";
 import { User } from "../models/User.js";
+import { AppError } from "../utils/AppError.js";
+import { generateAccessToken, generateRefreshToken } from "../utils/Token.js";
+import bcrypt from "bcrypt";
 export const createAccount = catchAsync(async (req, res, next) => {
   const { name, email, password, phone_no } = req.validated.body;
   const existingUser1 = await User.findOne({ email });
   if (existingUser1) {
-    return res.status(409).json({
-      success: false,
-      message: "User already exists",
-    });
+    return next(new AppError("User already exists", 409));
   }
   const existingUser2 = await User.findOne({ phone_no });
-  if (existingUser1) {
-    return res.status(409).json({
-      success: false,
-      message: "User already exists",
-    });
+  if (existingUser2) {
+    return next(new AppError("User already exists", 409));
   }
   const user = await User.create({
     name,
@@ -25,5 +22,35 @@ export const createAccount = catchAsync(async (req, res, next) => {
   res.status(201).json({
     success: true,
     message: "Account created successfully",
+  });
+});
+
+export const loginAccount = catchAsync(async (req, res, next) => {
+  const { email, password } = req.validated.body;
+  const user = await User.findOne({ email }).select("+password");
+  if (!user) {
+    return next(new AppError("Invalid email or password"));
+  }
+  const isValid = await bcrypt.compare(password, user.password);
+  if (!isValid) {
+    return next(new AppError("Invalid email or password"));
+  }
+  const accessToken = generateAccessToken(user);
+  const refreshToken = generateRefreshToken(user);
+  const isProduction = process.env.NODE_ENV === "production";
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    secure: isProduction ? true : false,
+    sameSite: isProduction ? "none" : "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    path: "/",
+  });
+  user.refreshToken = refreshToken;
+  await user.save();
+  res.status(200).json({
+    success: true,
+    message: "Logged in Successfully",
+    user,
+    accessToken,
   });
 });
