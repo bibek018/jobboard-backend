@@ -17,11 +17,12 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       enum: ["candidate", "employer"],
-      sparse: true,
+      required:true,
     },
     phone_no: {
       type: String,
       trim: true,
+      unique:true,
       default: null,
     },
     password: {
@@ -43,7 +44,7 @@ const userSchema = new mongoose.Schema(
       select: false,
     },
     googleId: {
-      type: String,
+      type: String, 
       unique: true,
       sparse: true,
     },
