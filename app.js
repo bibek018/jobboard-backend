@@ -4,11 +4,13 @@ import { requestlogger } from "./middlewares/requestLogger.js";
 import {notFound} from "./middlewares/notFound.js"
 import {errorHandler} from "./middlewares/errorHandler.js"
 import cookieParser from "cookie-parser";
+import { authMiddleware } from "./middlewares/authMiddleware.js";
 const app = express();
 app.use(express.json());
 app.use(requestlogger);
 app.use(cookieParser())
 app.use("/auth", authRouter);
+app.use(authMiddleware);
 app.use(notFound);
 app.use(errorHandler);
 export default app;

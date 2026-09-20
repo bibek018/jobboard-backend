@@ -11,8 +11,11 @@ const consoleFormat =
           return info;
         })(),
         colorize(),
-        printf(({ timestamp, level, message }) => {
-          return `${timestamp} [${level}]: ${message}`;
+        printf(({ timestamp, level, message, method, originalUrl }) => {
+          const reqInfo =
+            method && originalUrl ? `${method} ${originalUrl} ` : "";
+
+          return `${timestamp} [${level}] ${reqInfo}- ${message}`;
         }),
       );
 

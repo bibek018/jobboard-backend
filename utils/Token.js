@@ -1,10 +1,11 @@
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 
-export const generateAccessToken =  (user) => {
+export const generateAccessToken = (user) => {
   const accessToken = jwt.sign(
     {
       userId: user._id,
+      role: user.role,
     },
     process.env.ACCESS_SECRET,
     {

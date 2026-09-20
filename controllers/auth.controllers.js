@@ -29,14 +29,15 @@ export const loginAccount = catchAsync(async (req, res, next) => {
   const { email, password } = req.validated.body;
   const user = await User.findOne({ email }).select("+password");
   if (!user) {
-    return next(new AppError("Invalid email or password"));
+    return next(new AppError("Invalid email or password", 401));
   }
   const isValid = await bcrypt.compare(password, user.password);
   if (!isValid) {
-    return next(new AppError("Invalid email or password"));
+    return next(new AppError("Invalid email or password", 401));
   }
   const accessToken = generateAccessToken(user);
   const refreshToken = generateRefreshToken(user);
+  const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
   const isProduction = process.env.NODE_ENV === "production";
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
@@ -45,7 +46,7 @@ export const loginAccount = catchAsync(async (req, res, next) => {
     maxAge: 7 * 24 * 60 * 60 * 1000,
     path: "/",
   });
-  user.refreshToken = refreshToken;
+  user.refreshToken = hashedRefreshToken;
   await user.save();
   res.status(200).json({
     success: true,
