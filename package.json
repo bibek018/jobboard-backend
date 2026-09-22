@@ -21,6 +21,7 @@
   "homepage": "https://github.com/bibek018/jobboard-backend#readme",
   "dependencies": {
     "bcrypt": "^6.0.0",
+    "cloudinary": "^1.41.0",
     "cookie-parser": "^1.4.7",
     "crypto": "^1.0.1",
     "dotenv": "^18.0.0",
@@ -30,6 +31,8 @@
     "jest": "^30.5.2",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.10.1",
+    "multer": "^2.4.0",
+    "multer-storage-cloudinary": "^4.0.0",
     "supertest": "^7.2.2",
     "winston": "^3.19.0",
     "zod": "^4.6.5"

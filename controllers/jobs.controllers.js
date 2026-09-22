@@ -1,3 +1,4 @@
+import { Application } from "../models/Application.js";
 import { Job } from "../models/Job.js";
 import { AppError } from "../utils/AppError.js";
 import { catchAsync } from "../utils/catchAsync.js";
@@ -52,4 +53,102 @@ export const deleteJob = catchAsync(async (req, res, next) => {
     return next(new AppError("Job does not exists"));
   }
   res.sendStatus(204);
+});
+
+export const getJobsForPublic = catchAsync(async (req, res, next) => {
+  const { page, limit, location, type, keyword, sort, order } =
+    req.validated.query;
+
+  const filter = {
+    status: "Open",
+  };
+
+  if (location) {
+    filter.location = {
+      $regex: location,
+      $options: "i",
+    };
+  }
+
+  if (type) {
+    filter.type = type;
+  }
+
+  if (keyword) {
+    filter.$or = [
+      {
+        title: {
+          $regex: keyword,
+          $options: "i",
+        },
+      },
+      {
+        description: {
+          $regex: keyword,
+          $options: "i",
+        },
+      },
+    ];
+  }
+
+  const sortOrder = order === "desc" ? -1 : 1;
+
+  const skip = (page - 1) * limit;
+
+  const [jobs, totalJobs] = await Promise.all([
+    Job.find(filter)
+      .skip(skip)
+      .limit(limit)
+      .sort({ [sort]: sortOrder }),
+    Job.countDocuments(filter),
+  ]);
+
+  res.status(200).json({
+    success: true,
+    message: "Jobs fetched successfully",
+    jobs,
+    pagination: {
+      page,
+      limit,
+      totalJobs,
+      totalPages: Math.ceil(totalJobs / limit),
+    },
+  });
+});
+
+export const applyJob = catchAsync(async (req, res, next) => {
+  if (!req.file) {
+    return next(new AppError("Resume is required", 400));
+  }
+  const { jobId } = req.validated.body;
+  const existingApplication = await Application.findOne({
+    jobId,
+    candidateId: req.user._id,
+  });
+  if (existingApplication) {
+    return next(
+      new AppError("You have already applied for this position.", 409),
+    );
+  }
+
+  const application = await Application.create({
+    jobId,
+    candidateId: req.user._id,
+    resumeUrl: req.file.path,
+    resumePublicId: req.file.filename,
+  });
+  res.status(201).json({
+    success: true,
+    message: "Application submitted successfully",
+    application,
+  });
+});
+
+export const getMyApplications = catchAsync(async (req, res, next) => {
+  const applications = await Application.find({ candidateId: req.user._id }).populate("jobId", "title company location salary type");
+  res.status(200).json({
+    succces: true,
+    message: "Application fetched successfully",
+    applications,
+  });
 });

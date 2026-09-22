@@ -1,4 +1,4 @@
-import mongoose, { mongo } from "mongoose";
+import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 const userSchema = new mongoose.Schema(
   {
@@ -63,6 +63,10 @@ const userSchema = new mongoose.Schema(
       unique: true,
       sparse: true,
     },
+    companyName:{
+      type:String,
+      sparse:true
+    }
   },
   {
     timestamps: true,

@@ -30,6 +30,12 @@ export const errorHandler = (err, req, res, next) => {
       success: false,
     });
   }
+  if (err.code === 11000) {
+    return res.status(409).json({
+      success: false,
+      message: "You have already applied to this job",
+    });
+  }
   const status = err.statusCode || 500;
   if (!err.isOperational && status === 500) {
     logger.error("Something went wrong!", {

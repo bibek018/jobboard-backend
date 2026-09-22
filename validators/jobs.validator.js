@@ -1,5 +1,5 @@
 import { z } from "zod";
-
+import mongoose from "mongoose";
 export const jobCreateSchema = z
   .object({
     title: z
@@ -67,3 +67,33 @@ export const jobPublishOrCloseSchema = z
     status: z.enum(["Open", "Closed"], "Please select a valid job status"),
   })
   .strict();
+export const getJobSchema = z.object({
+  page: z.coerce.number().int().min(1, "Page must be at least 1").default(1),
+
+  limit: z.coerce
+    .number()
+    .int()
+    .min(1, "Limit must be at least 1")
+    .max(50, "Limit must be at most 50")
+    .default(10),
+
+  location: z.string().trim().optional(),
+
+  type: z
+    .enum(["Full-time", "Part-time", "Internship", "Freelance", "Contract"])
+    .optional(),
+
+  keyword: z.string().trim().optional(),
+
+  sort: z.enum(["createdAt", "updatedAt"]).default("createdAt"),
+
+  order: z.enum(["asc", "desc"]).default("desc"),
+});
+
+export const jobApplySchema = z.object({
+  jobId: z
+    .string()
+    .refine((value) => mongoose.Types.ObjectId.isValid(value), {
+      message: "Invalid job ID",
+    }),
+}).strict();
