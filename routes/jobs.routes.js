@@ -8,15 +8,18 @@ import {
   deleteJob,
   getJobsForPublic,
   applyJob,
-  getMyApplications
+  getMyApplications,
+  getJobApplicants,
+  changeApplicationStatus,
 } from "../controllers/jobs.controllers.js";
 import {
   jobCreateSchema,
   jobPublishOrCloseSchema,
   getJobSchema,
   jobApplySchema,
+  applicationStatusChangeSchema,
 } from "../validators/jobs.validator.js";
-import {uploadDocument} from "../middlewares/uploadDocument.js";
+import { uploadDocument } from "../middlewares/uploadDocument.js";
 const router = express.Router();
 router.post(
   "/",
@@ -40,5 +43,17 @@ router.post(
   validate(jobApplySchema),
   applyJob,
 );
-router.get("/applications/mine", roleMiddleware("candidate"), getMyApplications);
+router.get(
+  "/applications/mine",
+  roleMiddleware("candidate"),
+  getMyApplications,
+);
+
+router.get("/:id/applicants", roleMiddleware("employer"), getJobApplicants);
+router.patch(
+  "/applications/:id/status",
+  roleMiddleware("employer"),
+  validate(applicationStatusChangeSchema),
+  changeApplicationStatus,
+);
 export default router;

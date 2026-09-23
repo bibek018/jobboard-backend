@@ -97,3 +97,7 @@ export const jobApplySchema = z.object({
       message: "Invalid job ID",
     }),
 }).strict();
+
+export const applicationStatusChangeSchema= z.object({
+  status:z.enum(["Reviewing", "Interviewing", "Selected", "Rejected"], "Please select a valid status")
+})

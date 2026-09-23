@@ -145,10 +145,57 @@ export const applyJob = catchAsync(async (req, res, next) => {
 });
 
 export const getMyApplications = catchAsync(async (req, res, next) => {
-  const applications = await Application.find({ candidateId: req.user._id }).populate("jobId", "title company location salary type");
+  const applications = await Application.find({
+    candidateId: req.user._id,
+  }).populate("jobId", "title company location salary type");
   res.status(200).json({
     succces: true,
     message: "Application fetched successfully",
     applications,
+  });
+});
+
+export const getJobApplicants = catchAsync(async (req, res, next) => {
+  const jobId = req.params.id;
+  if (!jobId) {
+    return next(new AppError("Job Id not provided", 400));
+  }
+  const isJobCreator = await Job.findOne({
+    _id: jobId,
+    postedBy: req.user._id,
+  });
+  if (!isJobCreator) {
+    return next(new AppError("Access Denied", 403));
+  }
+  const applicants = await Application.find({ jobId }).populate(
+    "candidateId",
+    "name email",
+  );
+  res.status(200).json({
+    success: true,
+    message: "Applicants fetched successfully",
+    applicants,
+  });
+});
+
+export const changeApplicationStatus = catchAsync(async (req, res, next) => {
+  const applicationId = req.params.id;
+  if (!applicationId) {
+    return next(new AppError("Application id not provided", 400));
+  }
+  const { status } = req.validated.body;
+  const application = await Application.findOne({
+    _id: applicationId,
+  }).populate("candidateId", "name email");
+  const job = await Job.findOne({ _id: application.jobId });
+  if (job.postedBy !== req.user_id) {
+    return next(new AppError("Access Denied", 403));
+  }
+  application.status = status;
+  await application.save();
+  res.status(200).json({
+    success: true,
+    message: "Application status updated successfully",
+    application,
   });
 });
