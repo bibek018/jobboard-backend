@@ -4,7 +4,8 @@ import { AppError } from "../utils/AppError.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/Token.js";
 import bcrypt from "bcrypt";
 export const createAccount = catchAsync(async (req, res, next) => {
-  const { name, email, password, phone_no, role } = req.validated.body;
+  const { name, email, password, phone_no, role, companyName } =
+    req.validated.body;
   const existingUser = await User.findOne({
     $or: [{ email }, { phone_no }],
   });
@@ -22,10 +23,12 @@ export const createAccount = catchAsync(async (req, res, next) => {
     phone_no,
     password,
     role,
+    ...(companyName && { companyName }),
   });
   res.status(201).json({
     success: true,
     message: "Account created successfully",
+    user,
   });
 });
 

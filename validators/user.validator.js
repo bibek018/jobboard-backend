@@ -8,6 +8,7 @@ export const userRegisterSchema = z
       .string()
       .regex(/^\+977\d{10}$/, "Phone number must start with +977 followed by 10 digits"),
     role: z.enum(["candidate", "employer"], "Invalid role chosen"),
+    companyName:z.string().optional(),
     password: z
       .string()
       .min(8, "Password must be minimum of 8 letters.")
