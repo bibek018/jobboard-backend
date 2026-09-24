@@ -1,6 +1,8 @@
 import express from "express";
+
 import { roleMiddleware } from "../middlewares/roleMiddleware.js";
 import { validate } from "../middlewares/validate.js";
+
 import {
   createJob,
   publishOrCloseJob,
@@ -12,6 +14,7 @@ import {
   getJobApplicants,
   changeApplicationStatus,
 } from "../controllers/jobs.controllers.js";
+
 import {
   jobCreateSchema,
   jobPublishOrCloseSchema,
@@ -22,30 +25,43 @@ import {
   getMyApplicationsSchema,
   getApplicantsSchema,
 } from "../validators/jobs.validator.js";
+
 import { uploadDocument } from "../middlewares/uploadDocument.js";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
+
 const router = express.Router();
+
+// Public
 router.get("/", validate(getJobSchema, "query"), getJobsForPublic);
+
+// Protected
 router.use(authMiddleware);
+
+// Employer — Jobs
 router.post(
   "/",
   roleMiddleware("employer"),
   validate(jobCreateSchema),
   createJob,
 );
+
 router.patch(
   "/:id",
   roleMiddleware("employer"),
   validate(jobPublishOrCloseSchema),
   publishOrCloseJob,
 );
+
 router.get(
-  "/myJobs",
-  validate(myJobsSchema, "query"),
+  "/my-jobs",
   roleMiddleware("employer"),
+  validate(myJobsSchema, "query"),
   getMyJobs,
 );
+
 router.delete("/:id", roleMiddleware("employer"), deleteDraftedJob);
+
+// Candidate — Applications
 router.post(
   "/:id/apply",
   roleMiddleware("candidate"),
@@ -53,6 +69,7 @@ router.post(
   validate(jobApplySchema),
   applyJob,
 );
+
 router.get(
   "/applications/my-applications",
   roleMiddleware("candidate"),
@@ -60,16 +77,19 @@ router.get(
   getMyApplications,
 );
 
+// Employer — Applicants
 router.get(
   "/:id/applicants",
   roleMiddleware("employer"),
   validate(getApplicantsSchema, "query"),
   getJobApplicants,
 );
+
 router.patch(
   "/applications/:id/status",
   roleMiddleware("employer"),
   validate(applicationStatusChangeSchema),
   changeApplicationStatus,
 );
+
 export default router;
