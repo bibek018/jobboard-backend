@@ -1,0 +1,282 @@
+{
+    "info": {
+      "_postman_id": "41653d7d-21d6-49b1-87cb-a98c5b49779d",
+      "name": "Job Board API",
+      "description": "Cleaned and structured Postman collection for the Job Board API with sanitized mock data.",
+      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "auth": {
+      "type": "bearer",
+      "bearer": [
+        {
+          "key": "token",
+          "value": "{{bearerToken}}",
+          "type": "string"
+        }
+      ]
+    },
+    "item": [
+      {
+        "name": "Auth",
+        "item": [
+          {
+            "name": "Register Employer",
+            "request": {
+              "auth": {
+                "type": "noauth"
+              },
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"name\": \"Jane Doe\",\n  \"email\": \"employer@example.com\",\n  \"role\": \"employer\",\n  \"companyName\": \"Tech Solutions Inc\",\n  \"password\": \"SecurePass123!\",\n  \"confirmPassword\": \"SecurePass123!\",\n  \"phone_no\": \"+15550192834\"\n}",
+                "options": {
+                  "raw": {
+                    "language": "json"
+                  }
+                }
+              },
+              "url": {
+                "raw": "{{baseUrl}}/auth/register",
+                "host": ["{{baseUrl}}"],
+                "path": ["auth", "register"]
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "Register Candidate",
+            "request": {
+              "auth": {
+                "type": "noauth"
+              },
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"name\": \"John Smith\",\n  \"email\": \"candidate@example.com\",\n  \"role\": \"candidate\",\n  \"password\": \"SecurePass123!\",\n  \"confirmPassword\": \"SecurePass123!\",\n  \"phone_no\": \"+15550195678\"\n}",
+                "options": {
+                  "raw": {
+                    "language": "json"
+                  }
+                }
+              },
+              "url": {
+                "raw": "{{baseUrl}}/auth/register",
+                "host": ["{{baseUrl}}"],
+                "path": ["auth", "register"]
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "Login User",
+            "request": {
+              "auth": {
+                "type": "noauth"
+              },
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"email\": \"employer@example.com\",\n  \"password\": \"SecurePass123!\"\n}",
+                "options": {
+                  "raw": {
+                    "language": "json"
+                  }
+                }
+              },
+              "url": {
+                "raw": "{{baseUrl}}/auth/login",
+                "host": ["{{baseUrl}}"],
+                "path": ["auth", "login"]
+              }
+            },
+            "response": []
+          }
+        ]
+      },
+      {
+        "name": "Jobs",
+        "item": [
+          {
+            "name": "Get Public Jobs",
+            "request": {
+              "auth": {
+                "type": "noauth"
+              },
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/jobs",
+                "host": ["{{baseUrl}}"],
+                "path": ["jobs"]
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "Create Job",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"title\": \"Freelance Web Developer\",\n  \"description\": \"We need a freelance web developer to build responsive websites, integrate APIs, and deliver clean and maintainable frontend code.\",\n  \"location\": \"Remote\",\n  \"salary\": {\n    \"min\": 15,\n    \"max\": 25,\n    \"currency\": \"USD\",\n    \"period\": \"hour\"\n  },\n  \"type\": \"Freelance\"\n}",
+                "options": {
+                  "raw": {
+                    "language": "json"
+                  }
+                }
+              },
+              "url": {
+                "raw": "{{baseUrl}}/jobs",
+                "host": ["{{baseUrl}}"],
+                "path": ["jobs"]
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "Get My Posted Jobs",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/jobs/myJobs?page=1&limit=10",
+                "host": ["{{baseUrl}}"],
+                "path": ["jobs", "myJobs"],
+                "query": [
+                  {
+                    "key": "page",
+                    "value": "1"
+                  },
+                  {
+                    "key": "limit",
+                    "value": "10"
+                  }
+                ]
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "Update Job Status",
+            "request": {
+              "method": "PATCH",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"status\": \"Open\"\n}",
+                "options": {
+                  "raw": {
+                    "language": "json"
+                  }
+                }
+              },
+              "url": {
+                "raw": "{{baseUrl}}/jobs/:jobId",
+                "host": ["{{baseUrl}}"],
+                "path": ["jobs", ":jobId"],
+                "variable": [
+                  {
+                    "key": "jobId",
+                    "value": "650000000000000000000000"
+                  }
+                ]
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "Apply for Job",
+            "request": {
+              "method": "POST",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/jobs/:jobId/apply",
+                "host": ["{{baseUrl}}"],
+                "path": ["jobs", ":jobId", "apply"],
+                "variable": [
+                  {
+                    "key": "jobId",
+                    "value": "650000000000000000000000"
+                  }
+                ]
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "Get Job Applicants",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/jobs/:jobId/applicants",
+                "host": ["{{baseUrl}}"],
+                "path": ["jobs", ":jobId", "applicants"],
+                "variable": [
+                  {
+                    "key": "jobId",
+                    "value": "650000000000000000000000"
+                  }
+                ]
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "Get My Submitted Applications",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/jobs/applications/my-applications",
+                "host": ["{{baseUrl}}"],
+                "path": ["jobs", "applications", "my-applications"]
+              }
+            },
+            "response": []
+          }
+        ]
+      }
+    ],
+    "variable": [
+      {
+        "key": "baseUrl",
+        "value": "http://localhost:5000/api/v1",
+        "type": "string"
+      },
+      {
+        "key": "bearerToken",
+        "value": "YOUR_JWT_TOKEN_HERE",
+        "type": "string"
+      }
+    ]
+  }
