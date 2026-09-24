@@ -24,7 +24,7 @@ export const publishOrCloseJob = catchAsync(async (req, res, next) => {
   const jobId = req.params.id;
   const job = await Job.findOne({ _id: jobId, postedBy: req.user._id });
   if (!job) {
-    return next(new AppError("Job does not exists", 404));
+    return next(new AppError("Job does not exist", 404));
   }
   job.status = status;
   await job.save();
@@ -36,11 +36,22 @@ export const publishOrCloseJob = catchAsync(async (req, res, next) => {
 });
 
 export const getMyJobs = catchAsync(async (req, res, next) => {
-  const jobs = await Job.find({ postedBy: req.user._id });
+  const { page, limit } = req.validated.query;
+  const skip = (page - 1) * limit;
+  const jobs = await Job.find({ postedBy: req.user._id })
+    .skip(skip)
+    .limit(limit);
+  const totalJobs = await Job.countDocuments({ postedBy: req.user._id });
   res.status(200).json({
     success: true,
     message: "Jobs fetched successfully",
     jobs,
+    pagination: {
+      page,
+      limit,
+      totalJobs,
+      totalPages: Math.ceil(totalJobs / limit),
+    },
   });
 });
 
@@ -50,7 +61,7 @@ export const deleteJob = catchAsync(async (req, res, next) => {
     postedBy: req.user._id,
   });
   if (!job) {
-    return next(new AppError("Job does not exists"));
+    return next(new AppError("Job does not exists", 404));
   }
   res.sendStatus(204);
 });
@@ -121,6 +132,14 @@ export const applyJob = catchAsync(async (req, res, next) => {
     return next(new AppError("Resume is required", 400));
   }
   const { jobId } = req.validated.body;
+  const job = await Job.findOne({
+    _id: jobId,
+    status: "Open",
+  });
+
+  if (!job) {
+    return next(new AppError("Job is not available", 404));
+  }
   const existingApplication = await Application.findOne({
     jobId,
     candidateId: req.user._id,
@@ -145,13 +164,31 @@ export const applyJob = catchAsync(async (req, res, next) => {
 });
 
 export const getMyApplications = catchAsync(async (req, res, next) => {
+  const { page, limit } = req.validated.query;
+  const skip = (page - 1) * limit;
+
   const applications = await Application.find({
     candidateId: req.user._id,
-  }).populate("jobId", "title company location salary type");
+  })
+    .populate("jobId", "title company location salary type")
+    .skip(skip)
+    .limit(limit)
+    .sort({
+      createdAt: -1,
+    });
+  const totalApplicantions = await Application.countDocuments({
+    candidateId: req.user._id,
+  });
   res.status(200).json({
-    succces: true,
+    success: true,
     message: "Application fetched successfully",
     applications,
+    pagination: {
+      page,
+      limit,
+      totalApplicantions,
+      totalPages: Math.ceil(totalApplicantions / limit),
+    },
   });
 });
 
@@ -167,14 +204,27 @@ export const getJobApplicants = catchAsync(async (req, res, next) => {
   if (!isJobCreator) {
     return next(new AppError("Access Denied", 403));
   }
-  const applicants = await Application.find({ jobId }).populate(
-    "candidateId",
-    "name email",
-  );
+  const { page, limit, sort } = req.validated.query;
+  const skip = (page - 1) * limit;
+  const sortOrder = sort === "newest" ? -1 : 1;
+  const applicants = await Application.find({ jobId })
+    .populate("candidateId", "name email")
+    .skip(skip)
+    .limit(limit)
+    .sort({
+      createdAt: sortOrder,
+    });
+  const totalApplicants = await Application.countDocuments({ jobId });
   res.status(200).json({
     success: true,
     message: "Applicants fetched successfully",
     applicants,
+    pagination: {
+      page,
+      limit,
+      totalApplicants,
+      totalPages: Math.ceil(totalApplicants / limit),
+    },
   });
 });
 
@@ -184,15 +234,20 @@ export const changeApplicationStatus = catchAsync(async (req, res, next) => {
     return next(new AppError("Application id not provided", 400));
   }
   const { status } = req.validated.body;
-  const application = await Application.findOne({
-    _id: applicationId,
-  }).populate("candidateId", "name email");
-  const job = await Job.findOne({ _id: application.jobId });
-  if (job.postedBy !== req.user_id) {
+  const application = await Application.findById(applicationId);
+  if (!application) {
+    return next(new AppError("Application does not exist", 404));
+  }
+  const job = await Job.findById(application.jobId);
+  if (!job) {
+    return next(new AppError("Job does not exist", 404));
+  }
+  if (!job.postedBy.equals(req.user._id)) {
     return next(new AppError("Access Denied", 403));
   }
   application.status = status;
   await application.save();
+  await application.populate("candidateId", "name email");
   res.status(200).json({
     success: true,
     message: "Application status updated successfully",

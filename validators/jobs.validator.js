@@ -90,14 +90,56 @@ export const getJobSchema = z.object({
   order: z.enum(["asc", "desc"]).default("desc"),
 });
 
-export const jobApplySchema = z.object({
-  jobId: z
-    .string()
-    .refine((value) => mongoose.Types.ObjectId.isValid(value), {
-      message: "Invalid job ID",
-    }),
-}).strict();
+export const jobApplySchema = z
+  .object({
+    jobId: z
+      .string()
+      .refine((value) => mongoose.Types.ObjectId.isValid(value), {
+        message: "Invalid job ID",
+      }),
+  })
+  .strict();
 
-export const applicationStatusChangeSchema= z.object({
-  status:z.enum(["Reviewing", "Interviewing", "Selected", "Rejected"], "Please select a valid status")
-})
+export const applicationStatusChangeSchema = z.object({
+  status: z.enum(
+    ["Reviewing", "Interviewing", "Selected", "Rejected"],
+    "Please select a valid status",
+  ),
+});
+export const myJobsSchema = z
+  .object({
+    page: z.coerce.number().int().min(1, "Page must be at least 1").default(1),
+    limit: z.coerce
+      .number()
+      .int()
+      .min(5, "Page limit must be minimum 5")
+      .max(50, "Page limit can't exceed 50")
+      .default(10),
+  })
+  .strict();
+export const getMyApplicationsSchema = z
+  .object({
+    page: z.coerce.number().int().min(1, "Page must be at least 1").default(1),
+    limit: z.coerce
+      .number()
+      .int()
+      .min(5, "Page limit must be minimum 5")
+      .max(50, "Page limit can't exceed 50")
+      .default(10),
+  })
+  .strict();
+
+export const getApplicantsSchema = z
+  .object({
+    page: z.coerce.number().int().min(1, "Page must be at least 1").default(1),
+    limit: z.coerce
+      .number()
+      .int()
+      .min(5, "Page limit must be minimum 5")
+      .max(50, "Page limit can't exceed 50")
+      .default(10),
+    sort: z
+      .enum(["newest", "oldest"], "Please choose a valid status")
+      .default("newest"),
+  })
+  .strict();

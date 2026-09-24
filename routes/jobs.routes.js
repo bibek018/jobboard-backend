@@ -18,6 +18,9 @@ import {
   getJobSchema,
   jobApplySchema,
   applicationStatusChangeSchema,
+  myJobsSchema,
+  getMyApplicationsSchema,
+  getApplicantsSchema,
 } from "../validators/jobs.validator.js";
 import { uploadDocument } from "../middlewares/uploadDocument.js";
 const router = express.Router();
@@ -34,7 +37,12 @@ router.patch(
   publishOrCloseJob,
 );
 router.get("/", validate(getJobSchema, "query"), getJobsForPublic);
-router.get("/mine", roleMiddleware("employer"), getMyJobs);
+router.get(
+  "/myJobs",
+  validate(myJobsSchema),
+  roleMiddleware("employer"),
+  getMyJobs,
+);
 router.delete("/:id", roleMiddleware("employer"), deleteJob);
 router.post(
   "/:id/apply",
@@ -44,12 +52,18 @@ router.post(
   applyJob,
 );
 router.get(
-  "/applications/mine",
+  "/applications/my-applications",
   roleMiddleware("candidate"),
+  validate(getMyApplicationsSchema, "query"),
   getMyApplications,
 );
 
-router.get("/:id/applicants", roleMiddleware("employer"), getJobApplicants);
+router.get(
+  "/:id/applicants",
+  roleMiddleware("employer"),
+  validate(getApplicantsSchema, "query"),
+  getJobApplicants,
+);
 router.patch(
   "/applications/:id/status",
   roleMiddleware("employer"),
