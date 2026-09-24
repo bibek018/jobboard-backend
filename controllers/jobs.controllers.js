@@ -40,7 +40,8 @@ export const getMyJobs = catchAsync(async (req, res, next) => {
   const skip = (page - 1) * limit;
   const jobs = await Job.find({ postedBy: req.user._id })
     .skip(skip)
-    .limit(limit);
+    .limit(limit)
+    .sort({ createdAt: -1 });
   const totalJobs = await Job.countDocuments({ postedBy: req.user._id });
   res.status(200).json({
     success: true,
@@ -55,14 +56,24 @@ export const getMyJobs = catchAsync(async (req, res, next) => {
   });
 });
 
-export const deleteJob = catchAsync(async (req, res, next) => {
-  const job = await Job.findOneAndDelete({
+export const deleteDraftedJob = catchAsync(async (req, res, next) => {
+  const job = await Job.findOne({
     _id: req.params.id,
     postedBy: req.user._id,
   });
+
   if (!job) {
-    return next(new AppError("Job does not exists", 404));
+    return next(new AppError("Job does not exist", 404));
   }
+  if (job.status !== "draft") {
+    return next(
+      new AppError(
+        "Published jobs cannot be deleted. Try closing the job instead.",
+        400,
+      ),
+    );
+  }
+  await job.deleteOne();
   res.sendStatus(204);
 });
 
@@ -170,7 +181,15 @@ export const getMyApplications = catchAsync(async (req, res, next) => {
   const applications = await Application.find({
     candidateId: req.user._id,
   })
-    .populate("jobId", "title company location salary type")
+    // .populate("jobId", "title location salary type")
+    .populate({
+      path: "jobId",
+      select: "title location salary type postedBy",
+      populate: {
+        path: "postedBy",
+        select: "companyName",
+      },
+    })
     .skip(skip)
     .limit(limit)
     .sort({
