@@ -62,3 +62,29 @@ export const loginAccount = catchAsync(async (req, res, next) => {
     accessToken,
   });
 });
+
+//Send profile details like role, onboarding completion etc.
+export const sendProfile = catchAsync(async (req, res, next) => {
+  const userProfile = await User.findById(req.user._id);
+  res.status(200).json({
+    success: true,
+    message: "Profile fetched successfully",
+    user: userProfile,
+  });
+});
+
+export const roleSetUser = catchAsync(async (req, res, next) => {
+  const { role } = req.validated.body;
+  const user = await User.findById(req.user._id);
+  if (user.role) {
+    return next(new AppError("Role already set", 400));
+  }
+  user.role = role;
+  await user.save();
+  res.status(200).json({
+    success: true,
+    message: "User role saved successfully",
+    user,
+  });
+});
+  

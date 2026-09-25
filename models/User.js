@@ -17,11 +17,7 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       enum: ["candidate", "employer"],
-      required: true,
-    },
-    companyName: {
-      type: String,
-      sparse: true,
+      default: null,
     },
     phone_no: {
       type: String,
@@ -33,6 +29,14 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
       select: false,
+    },
+    onboardingComplete: {
+      type: Boolean,
+      default: false,
+    },
+    profile: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
     },
     avatarUrl: {
       type: String,
@@ -51,21 +55,25 @@ const userSchema = new mongoose.Schema(
       type: String,
       unique: true,
       sparse: true,
+      select: false,
     },
     githubId: {
       type: String,
       unique: true,
       sparse: true,
+      select: false,
     },
     facebookId: {
       type: String,
       unique: true,
       sparse: true,
+      select: false,
     },
     linkedinId: {
       type: String,
       unique: true,
       sparse: true,
+      select: false,
     },
   },
   {

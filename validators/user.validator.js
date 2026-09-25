@@ -6,15 +6,18 @@ export const userRegisterSchema = z
     email: z.email("Invalid email format"),
     phone_no: z
       .string()
-      .regex(/^\+977\d{10}$/, "Phone number must start with +977 followed by 10 digits"),
+      .regex(
+        /^\+977\d{10}$/,
+        "Phone number must start with +977 followed by 10 digits",
+      ),
     role: z.enum(["candidate", "employer"], "Invalid role chosen"),
-    companyName:z.string().optional(),
+    companyName: z.string().optional(),
     password: z
       .string()
       .min(8, "Password must be minimum of 8 letters.")
       .regex(
         /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/,
-        "Password must include uppercase, lowercase, number, and special character"
+        "Password must include uppercase, lowercase, number, and special character",
       ),
     confirmPassword: z
       .string()
@@ -32,3 +35,16 @@ export const userLoginSchema = z
     password: z.string(),
   })
   .strict();
+
+export const userRoleSetSchema = z
+  .object({
+    role: z.enum(
+      ["candidate, employer"],
+      "Please select candidate or employer as a role",
+    ),
+  })
+  .strict();
+
+export const employerOnboardSchema = z.object({
+  
+});
