@@ -21,6 +21,8 @@ app.use(helmet());
 app.use(requestlogger);
 app.use(cookieParser());
 app.use(generalLimiter);
+app.use("/version-1/auth", authRouter);
+app.use("/version-1/jobs", jobRouter);
 app.use("/auth", authRouter);
 app.use("/jobs", jobRouter);
 app.use(notFound);

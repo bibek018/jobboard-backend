@@ -42,9 +42,9 @@
                 }
               },
               "url": {
-                "raw": "{{baseUrl}}/auth/register",
+                "raw": "{{baseUrl}}/version-1/auth/register",
                 "host": ["{{baseUrl}}"],
-                "path": ["auth", "register"]
+                "path": ["version-1", "auth", "register"]
               }
             },
             "response": []
@@ -72,9 +72,9 @@
                 }
               },
               "url": {
-                "raw": "{{baseUrl}}/auth/register",
+                "raw": "{{baseUrl}}/version-1/auth/register",
                 "host": ["{{baseUrl}}"],
-                "path": ["auth", "register"]
+                "path": ["version-1", "auth", "register"]
               }
             },
             "response": []
@@ -102,9 +102,9 @@
                 }
               },
               "url": {
-                "raw": "{{baseUrl}}/auth/login",
+                "raw": "{{baseUrl}}/version-1/auth/login",
                 "host": ["{{baseUrl}}"],
-                "path": ["auth", "login"]
+                "path": ["version-1", "auth", "login"]
               }
             },
             "response": []
@@ -123,9 +123,9 @@
               "method": "GET",
               "header": [],
               "url": {
-                "raw": "{{baseUrl}}/jobs",
+                "raw": "{{baseUrl}}/version-1/jobs",
                 "host": ["{{baseUrl}}"],
-                "path": ["jobs"]
+                "path": ["version-1", "jobs"]
               }
             },
             "response": []
@@ -150,9 +150,9 @@
                 }
               },
               "url": {
-                "raw": "{{baseUrl}}/jobs",
+                "raw": "{{baseUrl}}/version-1/jobs",
                 "host": ["{{baseUrl}}"],
-                "path": ["jobs"]
+                "path": ["version-1", "jobs"]
               }
             },
             "response": []
@@ -163,9 +163,9 @@
               "method": "GET",
               "header": [],
               "url": {
-                "raw": "{{baseUrl}}/jobs/myJobs?page=1&limit=10",
+                "raw": "{{baseUrl}}/version-1/jobs/myJobs?page=1&limit=10",
                 "host": ["{{baseUrl}}"],
-                "path": ["jobs", "myJobs"],
+                "path": ["version-1", "jobs", "myJobs"],
                 "query": [
                   {
                     "key": "page",
@@ -200,9 +200,9 @@
                 }
               },
               "url": {
-                "raw": "{{baseUrl}}/jobs/:jobId",
+                "raw": "{{baseUrl}}/version-1/jobs/:jobId",
                 "host": ["{{baseUrl}}"],
-                "path": ["jobs", ":jobId"],
+                "path": ["version-1", "jobs", ":jobId"],
                 "variable": [
                   {
                     "key": "jobId",
@@ -219,9 +219,9 @@
               "method": "POST",
               "header": [],
               "url": {
-                "raw": "{{baseUrl}}/jobs/:jobId/apply",
+                "raw": "{{baseUrl}}/version-1/jobs/:jobId/apply",
                 "host": ["{{baseUrl}}"],
-                "path": ["jobs", ":jobId", "apply"],
+                "path": ["version-1", "jobs", ":jobId", "apply"],
                 "variable": [
                   {
                     "key": "jobId",
@@ -238,9 +238,9 @@
               "method": "GET",
               "header": [],
               "url": {
-                "raw": "{{baseUrl}}/jobs/:jobId/applicants",
+                "raw": "{{baseUrl}}/version-1/jobs/:jobId/applicants",
                 "host": ["{{baseUrl}}"],
-                "path": ["jobs", ":jobId", "applicants"],
+                "path": ["version-1", "jobs", ":jobId", "applicants"],
                 "variable": [
                   {
                     "key": "jobId",
@@ -257,9 +257,9 @@
               "method": "GET",
               "header": [],
               "url": {
-                "raw": "{{baseUrl}}/jobs/applications/my-applications",
+                "raw": "{{baseUrl}}/version-1/jobs/applications/my-applications",
                 "host": ["{{baseUrl}}"],
-                "path": ["jobs", "applications", "my-applications"]
+                "path": ["version-1", "jobs", "applications", "my-applications"]
               }
             },
             "response": []
