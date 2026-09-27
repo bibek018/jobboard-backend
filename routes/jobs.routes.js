@@ -26,8 +26,9 @@ import {
   getApplicantsSchema,
 } from "../validators/jobs.validator.js";
 
-import { uploadDocument } from "../middlewares/uploadDocument.js";
+import { upload } from "../middlewares/upload.js";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
+import { requireOnboarded } from "../middlewares/requireOnboarded.js";
 
 const router = express.Router();
 
@@ -36,7 +37,7 @@ router.get("/", validate(getJobSchema, "query"), getJobsForPublic);
 
 // Protected
 router.use(authMiddleware);
-
+router.use(requireOnboarded);
 // Employer — Jobs
 router.post(
   "/",
@@ -65,7 +66,7 @@ router.delete("/:id", roleMiddleware("employer"), deleteDraftedJob);
 router.post(
   "/:id/apply",
   roleMiddleware("candidate"),
-  uploadDocument.single("resume"),
+  upload.single("resume"),
   validate(jobApplySchema),
   applyJob,
 );

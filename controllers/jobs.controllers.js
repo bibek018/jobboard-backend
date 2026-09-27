@@ -2,6 +2,68 @@ import { Application } from "../models/Application.js";
 import { Job } from "../models/Job.js";
 import { AppError } from "../utils/AppError.js";
 import { catchAsync } from "../utils/catchAsync.js";
+
+export const getJobsForPublic = catchAsync(async (req, res, next) => {
+  const { page, limit, location, type, keyword, sort, order } =
+    req.validated.query;
+
+  const filter = {
+    status: "Open",
+  };
+
+  if (location) {
+    filter.location = {
+      $regex: location,
+      $options: "i",
+    };
+  }
+
+  if (type) {
+    filter.type = type;
+  }
+
+  if (keyword) {
+    filter.$or = [
+      {
+        title: {
+          $regex: keyword,
+          $options: "i",
+        },
+      },
+      {
+        description: {
+          $regex: keyword,
+          $options: "i",
+        },
+      },
+    ];
+  }
+
+  const sortOrder = order === "desc" ? -1 : 1;
+
+  const skip = (page - 1) * limit;
+
+  const [jobs, totalJobs] = await Promise.all([
+    Job.find(filter)
+      .skip(skip)
+      .limit(limit)
+      .sort({ [sort]: sortOrder }),
+    Job.countDocuments(filter),
+  ]);
+
+  res.status(200).json({
+    success: true,
+    message: "Jobs fetched successfully",
+    jobs,
+    pagination: {
+      page,
+      limit,
+      totalJobs,
+      totalPages: Math.ceil(totalJobs / limit),
+    },
+  });
+});
+
 export const createJob = catchAsync(async (req, res, next) => {
   const { title, description, location, salary, type } = req.validated.body;
   const job = await Job.create({
@@ -77,67 +139,6 @@ export const deleteDraftedJob = catchAsync(async (req, res, next) => {
   res.sendStatus(204);
 });
 
-export const getJobsForPublic = catchAsync(async (req, res, next) => {
-  const { page, limit, location, type, keyword, sort, order } =
-    req.validated.query;
-
-  const filter = {
-    status: "Open",
-  };
-
-  if (location) {
-    filter.location = {
-      $regex: location,
-      $options: "i",
-    };
-  }
-
-  if (type) {
-    filter.type = type;
-  }
-
-  if (keyword) {
-    filter.$or = [
-      {
-        title: {
-          $regex: keyword,
-          $options: "i",
-        },
-      },
-      {
-        description: {
-          $regex: keyword,
-          $options: "i",
-        },
-      },
-    ];
-  }
-
-  const sortOrder = order === "desc" ? -1 : 1;
-
-  const skip = (page - 1) * limit;
-
-  const [jobs, totalJobs] = await Promise.all([
-    Job.find(filter)
-      .skip(skip)
-      .limit(limit)
-      .sort({ [sort]: sortOrder }),
-    Job.countDocuments(filter),
-  ]);
-
-  res.status(200).json({
-    success: true,
-    message: "Jobs fetched successfully",
-    jobs,
-    pagination: {
-      page,
-      limit,
-      totalJobs,
-      totalPages: Math.ceil(totalJobs / limit),
-    },
-  });
-});
-
 export const applyJob = catchAsync(async (req, res, next) => {
   if (!req.file) {
     return next(new AppError("Resume is required", 400));
@@ -169,7 +170,7 @@ export const applyJob = catchAsync(async (req, res, next) => {
   });
   res.status(201).json({
     success: true,
-    message: "Application submitted successfully",
+    message: "Job applied successfully",
     application,
   });
 });
@@ -200,7 +201,7 @@ export const getMyApplications = catchAsync(async (req, res, next) => {
   });
   res.status(200).json({
     success: true,
-    message: "Application fetched successfully",
+    message: "Applications fetched successfully",
     applications,
     pagination: {
       page,

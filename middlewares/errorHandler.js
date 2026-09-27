@@ -1,5 +1,5 @@
 import logger from "../utils/logger.js";
-
+import multer from "multer";
 export const errorHandler = (err, req, res, next) => {
   if (err.name === "ValidationError") {
     return res.status(400).json({
@@ -36,6 +36,14 @@ export const errorHandler = (err, req, res, next) => {
       message: "You have already applied to this job",
     });
   }
+  if (err instanceof multer.MulterError) {
+    if (err.code === "LIMIT_FILE_SIZE") {
+      return res.status(400).json({
+        success: false,
+        message: "File size must not exceed 1 MB",
+      });
+    }
+  }
   const status = err.statusCode || 500;
   if (!err.isOperational && status === 500) {
     logger.error("Something went wrong!", {
@@ -48,6 +56,7 @@ export const errorHandler = (err, req, res, next) => {
       .status(500)
       .json({ status: 500, message: "Something went wrong", success: false });
   }
+
   logger.warn(`${err.message}`, {
     status,
     message: err.message,

@@ -4,8 +4,7 @@ import { AppError } from "../utils/AppError.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/Token.js";
 import bcrypt from "bcrypt";
 export const createAccount = catchAsync(async (req, res, next) => {
-  const { name, email, password, phone_no, role, companyName } =
-    req.validated.body;
+  const { name, email, password, phone_no } = req.validated.body;
   const existingUser = await User.findOne({
     $or: [{ email }, { phone_no }],
   });
@@ -22,8 +21,7 @@ export const createAccount = catchAsync(async (req, res, next) => {
     email,
     phone_no,
     password,
-    role,
-    ...(companyName && { companyName }),
+    profile: {},
   });
   res.status(201).json({
     success: true,
@@ -87,4 +85,59 @@ export const roleSetUser = catchAsync(async (req, res, next) => {
     user,
   });
 });
-  
+
+export const onboardingCandidateHandler = catchAsync(async (req, res, next) => {
+  const { preferredLocation, preferredJobType, skills } = req.validated.body;
+  const user = await User.findById(req.user._id);
+  user.profile = {
+    skills,
+    preferredLocation,
+    preferredJobType,
+  };
+  const avatar = req.files?.avatar?.[0];
+  const resume = req.files?.resume?.[0];
+  if (avatar) {
+    user.avatarUrl = avatar.path;
+    user.avatarPublicId = avatar.filename;
+  }
+  if (resume) {
+    user.profile.resumeUrl = resume.path;
+    user.profile.resumePublicId = resume.filename;
+  }
+  user.onboardingComplete = true;
+  await user.save();
+  res.status(200).json({
+    success: true,
+    message: "Onboarding completed successfully. Welcome aboard!",
+    user,
+  });
+});
+
+export const onboardingEmployeeHandler = catchAsync(async (req, res, next) => {
+  const { description, industry, companySize, companyName } =
+    req.validated.body;
+  const user = await User.findOne({ _id: req.user._id });
+  user.profile = {
+    companyName,
+    companySize,
+    description,
+    industry,
+  };
+  const avatar = req.files?.avatar?.[0];
+  const companyLogo = req.files?.companyLogo?.[0];
+  if (avatar) {
+    user.avatarUrl = avatar.path;
+    user.avatarPublicId = avatar.filename;
+  }
+  if (companyLogo) {
+    user.profile.companyLogo = companyLogo.path;
+    user.profile.companyLogo = companyLogo.filename;
+  }
+  user.onboardingComplete = true;
+  await user.save();
+  res.status(200).json({
+    success: true,
+    message: "Onboarding completed successfully. Welcome aboard!",
+    user,
+  });
+});

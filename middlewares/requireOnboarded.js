@@ -1,5 +1,5 @@
 import { User } from "../models/User.js";
-import { AppError } from "../utils/AppError";
+import { AppError } from "../utils/AppError.js";
 import { catchAsync } from "../utils/catchAsync.js";
 
 export const requireOnboarded = catchAsync(async (req, res, next) => {
