@@ -8,6 +8,7 @@ import { errorHandler } from "./middlewares/errorHandler.js";
 import cookieParser from "cookie-parser";
 import jobRouter from "./routes/jobs.routes.js";
 import { generalLimiter } from "./utils/rateLimiter.js";
+import passport from "./utils/passport.js";
 
 const app = express();
 app.use(express.json());
@@ -18,13 +19,12 @@ app.use(
   }),
 );
 app.use(helmet());
+app.use(passport.initialize());
 app.use(requestlogger);
 app.use(cookieParser());
 app.use(generalLimiter);
-app.use("/version-1/auth", authRouter);
-app.use("/version-1/jobs", jobRouter);
-app.use("/auth", authRouter);
-app.use("/jobs", jobRouter);
+app.use("/api/auth", authRouter);
+app.use("/api/jobs", jobRouter);
 app.use(notFound);
 app.use(errorHandler);
 export default app;

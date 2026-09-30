@@ -33,38 +33,38 @@ import { requireOnboarded } from "../middlewares/requireOnboarded.js";
 const router = express.Router();
 
 // Public
-router.get("/", validate(getJobSchema, "query"), getJobsForPublic);
+router.get("/v1", validate(getJobSchema, "query"), getJobsForPublic);
 
 // Protected
 router.use(authMiddleware);
 router.use(requireOnboarded);
 // Employer — Jobs
 router.post(
-  "/",
+  "/v1/",
   roleMiddleware("employer"),
   validate(jobCreateSchema),
   createJob,
 );
 
 router.patch(
-  "/:id",
+  "/v1/:id",
   roleMiddleware("employer"),
   validate(jobPublishOrCloseSchema),
   publishOrCloseJob,
 );
 
 router.get(
-  "/my-jobs",
+  "/v1/my-jobs",
   roleMiddleware("employer"),
   validate(myJobsSchema, "query"),
   getMyJobs,
 );
 
-router.delete("/:id", roleMiddleware("employer"), deleteDraftedJob);
+router.delete("/v1/:id", roleMiddleware("employer"), deleteDraftedJob);
 
 // Candidate — Applications
 router.post(
-  "/:id/apply",
+  "/v1/:id/apply",
   roleMiddleware("candidate"),
   upload.single("resume"),
   validate(jobApplySchema),
@@ -72,7 +72,7 @@ router.post(
 );
 
 router.get(
-  "/applications/my-applications",
+  "/v1/applications/my-applications",
   roleMiddleware("candidate"),
   validate(getMyApplicationsSchema, "query"),
   getMyApplications,
@@ -80,14 +80,14 @@ router.get(
 
 // Employer — Applicants
 router.get(
-  "/:id/applicants",
+  "/v1/:id/applicants",
   roleMiddleware("employer"),
   validate(getApplicantsSchema, "query"),
   getJobApplicants,
 );
 
 router.patch(
-  "/applications/:id/status",
+  "/v1/applications/:id/status",
   roleMiddleware("employer"),
   validate(applicationStatusChangeSchema),
   changeApplicationStatus,

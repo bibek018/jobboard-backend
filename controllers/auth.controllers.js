@@ -141,3 +141,104 @@ export const onboardingEmployeeHandler = catchAsync(async (req, res, next) => {
     user,
   });
 });
+
+export const googleAuthHandler = catchAsync(async (req, res, next) => {
+  if (!req?.user?.email) {
+    return next(new AppError("Google authentication failed", 400));
+  }
+
+  const user = await User.findOne({ email: req.user.email });
+  if (!user) {
+    return next(new AppError("User not found", 404));
+  }
+
+  const isProduction = process.env.NODE_ENV === "production";
+  const refreshToken = await generateRefreshToken(user);
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    sameSite: isProduction ? "none" : "lax",
+    secure: isProduction,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    path: "/",
+  });
+
+  user.refreshToken = refreshToken;
+  await user.save();
+
+  res.redirect(`${process.env.CLIENT_ORIGIN}/dashboard`);
+});
+export const facebookAuthHandler = catchAsync(async (req, res, next) => {
+  if (!req?.user?.email) {
+    return next(new AppError("Facebook authentication failed", 400));
+  }
+
+  const user = await User.findOne({ email: req.user.email });
+  if (!user) {
+    return next(new AppError("User not found", 404));
+  }
+
+  const isProduction = process.env.NODE_ENV === "production";
+  const refreshToken = await generateRefreshToken(user);
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    sameSite: isProduction ? "none" : "lax",
+    secure: isProduction,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    path: "/",
+  });
+
+  user.refreshToken = refreshToken;
+  await user.save();
+
+  res.redirect(`${process.env.CLIENT_ORIGIN}/dashboard`);
+});
+export const githubAuthHandler = catchAsync(async (req, res, next) => {
+  if (!req?.user?.email) {
+    return next(new AppError("GitHub authentication failed", 400));
+  }
+
+  const user = await User.findOne({ email: req.user.email });
+  if (!user) {
+    return next(new AppError("User not found", 404));
+  }
+
+  const isProduction = process.env.NODE_ENV === "production";
+  const refreshToken = await generateRefreshToken(user);
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    sameSite: isProduction ? "none" : "lax",
+    secure: isProduction,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    path: "/",
+  });
+
+  user.refreshToken = refreshToken;
+  await user.save();
+
+  res.redirect(`${process.env.CLIENT_ORIGIN}/dashboard`);
+});
+export const linkedInAuthHandler = catchAsync(async (req, res, next) => {
+  if (!req?.user?.email) {
+    return next(new AppError("LinkedIn authentication failed", 400));
+  }
+
+  const user = await User.findOne({ email: req.user.email });
+  if (!user) {
+    return next(new AppError("User not found", 404));
+  }
+
+  const isProduction = process.env.NODE_ENV === "production";
+  const refreshToken = await generateRefreshToken(user);
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    sameSite: isProduction ? "none" : "lax",
+    secure: isProduction,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    path: "/",
+  });
+
+  user.refreshToken = refreshToken;
+  await user.save();
+
+  res.redirect(`${process.env.CLIENT_ORIGIN}/dashboard`);
+});
