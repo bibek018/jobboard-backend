@@ -274,3 +274,12 @@ export const changeApplicationStatus = catchAsync(async (req, res, next) => {
     application,
   });
 });
+
+export const getJobsCount = catchAsync(async (req, res, next) => {
+  const totalLiveJobs = await Job.countDocuments({});
+  res.status(200).json({
+    sucess: true,
+    message: "Successfully fetched live jobs",
+    totalLiveJobs,
+  });
+});

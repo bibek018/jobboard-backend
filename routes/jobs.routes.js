@@ -13,6 +13,7 @@ import {
   getMyApplications,
   getJobApplicants,
   changeApplicationStatus,
+  getJobsCount
 } from "../controllers/jobs.controllers.js";
 
 import {
@@ -34,13 +35,14 @@ const router = express.Router();
 
 // Public
 router.get("/v1", validate(getJobSchema, "query"), getJobsForPublic);
-
+router.get("/v1/jobs-count", getJobsCount);
 // Protected
 router.use(authMiddleware);
+
 router.use(requireOnboarded);
 // Employer — Jobs
 router.post(
-  "/v1/",
+  "/v1",
   roleMiddleware("employer"),
   validate(jobCreateSchema),
   createJob,

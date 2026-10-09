@@ -11,7 +11,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENTID,
       clientSecret: process.env.GOOGLE_CLIENTSECRET,
-      callbackURL: `${process.env.CLIENT_URL}/api/auth/v1/google/callback`,
+      callbackURL: `${process.env.SERVER_URI}/api/auth/v1/google/callback`,
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
@@ -48,7 +48,7 @@ passport.use(
     {
       clientID: process.env.GITHUB_CLIENTID,
       clientSecret: process.env.GITHUB_SECRET,
-      callbackURL: `${process.env.CLIENT_URL}/api/auth/v1/github/callback`,
+      callbackURL: `${process.env.SERVER_URI}/api/auth/v1/github/callback`,
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
@@ -85,7 +85,7 @@ passport.use(
     {
       clientID: process.env.FACEBOOK_CLIENTID,
       clientSecret: process.env.FACEBOOK_SECRET,
-      callbackURL: `${process.env.CLIENT_URL}/api/auth/v1/facebook/callback`,
+      callbackURL: `${process.env.SERVER_URI}/api/auth/v1/facebook/callback`,
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
@@ -121,7 +121,7 @@ passport.use(
     {
       clientID: process.env.LINKED_CLIENTID,
       clientSecret: process.env.LINKEDIN_SECRET,
-      callbackURL: `${process.env.CLIENT_URL}/api/auth/v1/linkedin/callback`,
+      callbackURL: `${process.env.SERVER_URI}/api/auth/v1/linkedin/callback`,
     },
     async (accessToken, refreshToken, profile, done) => {
       try {

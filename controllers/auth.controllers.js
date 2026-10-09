@@ -3,6 +3,11 @@ import { User } from "../models/User.js";
 import { AppError } from "../utils/AppError.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/Token.js";
 import bcrypt from "bcrypt";
+import { cookies } from "supertest";
+import { success } from "zod";
+import { referrerPolicy } from "helmet";
+import jwt from "jsonwebtoken";
+
 export const createAccount = catchAsync(async (req, res, next) => {
   const { name, email, password, phone_no } = req.validated.body;
   const existingUser = await User.findOne({
@@ -61,84 +66,39 @@ export const loginAccount = catchAsync(async (req, res, next) => {
   });
 });
 
-//Send profile details like role, onboarding completion etc.
-export const sendProfile = catchAsync(async (req, res, next) => {
-  const userProfile = await User.findById(req.user._id);
-  res.status(200).json({
-    success: true,
-    message: "Profile fetched successfully",
-    user: userProfile,
-  });
-});
-
-export const roleSetUser = catchAsync(async (req, res, next) => {
-  const { role } = req.validated.body;
-  const user = await User.findById(req.user._id);
-  if (user.role) {
-    return next(new AppError("Role already set", 400));
+export const handleRefresh = catchAsync(async (req, res, next) => {
+  const refreshToken = req.cookies.refreshToken;
+  if (!refreshToken) {
+    return next(new AppError("User not Authenticated", 401));
   }
-  user.role = role;
+  const payload = jwt.verify(refreshToken, process.env.REFRESH_SECRET);
+  const user = await User.findById(payload._id).select("+refreshToken");
+  if (!user) {
+    return next(new AppError("User does not exits. Please login again", 401));
+  }
+  const isVerified = await bcrypt.compare(refreshToken, user.refreshToken);
+  if (!isVerified) {
+    return next(new AppError("Token does not match", 401));
+  }
+  const newRefreshToken = generateRefreshToken(user);
+  const newHashedRefreshToken = await bcrypt.hash(newRefreshToken, 10);
+  const accessToken = generateAccessToken(user);
+  const isProduction = process.env.NODE_ENV === "production";
+
+  res.cookie("refreshToken", newRefreshToken, {
+    httpOnly: true,
+    secure: isProduction ? true : false,
+    sameSite: isProduction ? "none" : "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    path: "/",
+  });
+
+  user.refreshToken = newHashedRefreshToken;
   await user.save();
   res.status(200).json({
     success: true,
-    message: "User role saved successfully",
     user,
-  });
-});
-
-export const onboardingCandidateHandler = catchAsync(async (req, res, next) => {
-  const { preferredLocation, preferredJobType, skills } = req.validated.body;
-  const user = await User.findById(req.user._id);
-  user.profile = {
-    skills,
-    preferredLocation,
-    preferredJobType,
-  };
-  const avatar = req.files?.avatar?.[0];
-  const resume = req.files?.resume?.[0];
-  if (avatar) {
-    user.avatarUrl = avatar.path;
-    user.avatarPublicId = avatar.filename;
-  }
-  if (resume) {
-    user.profile.resumeUrl = resume.path;
-    user.profile.resumePublicId = resume.filename;
-  }
-  user.onboardingComplete = true;
-  await user.save();
-  res.status(200).json({
-    success: true,
-    message: "Onboarding completed successfully. Welcome aboard!",
-    user,
-  });
-});
-
-export const onboardingEmployeeHandler = catchAsync(async (req, res, next) => {
-  const { description, industry, companySize, companyName } =
-    req.validated.body;
-  const user = await User.findOne({ _id: req.user._id });
-  user.profile = {
-    companyName,
-    companySize,
-    description,
-    industry,
-  };
-  const avatar = req.files?.avatar?.[0];
-  const companyLogo = req.files?.companyLogo?.[0];
-  if (avatar) {
-    user.avatarUrl = avatar.path;
-    user.avatarPublicId = avatar.filename;
-  }
-  if (companyLogo) {
-    user.profile.companyLogo = companyLogo.path;
-    user.profile.companyLogo = companyLogo.filename;
-  }
-  user.onboardingComplete = true;
-  await user.save();
-  res.status(200).json({
-    success: true,
-    message: "Onboarding completed successfully. Welcome aboard!",
-    user,
+    accessToken,
   });
 });
 
@@ -167,6 +127,7 @@ export const googleAuthHandler = catchAsync(async (req, res, next) => {
 
   res.redirect(`${process.env.CLIENT_ORIGIN}/dashboard`);
 });
+
 export const facebookAuthHandler = catchAsync(async (req, res, next) => {
   if (!req?.user?.email) {
     return next(new AppError("Facebook authentication failed", 400));
@@ -192,6 +153,7 @@ export const facebookAuthHandler = catchAsync(async (req, res, next) => {
 
   res.redirect(`${process.env.CLIENT_ORIGIN}/dashboard`);
 });
+
 export const githubAuthHandler = catchAsync(async (req, res, next) => {
   if (!req?.user?.email) {
     return next(new AppError("GitHub authentication failed", 400));
@@ -217,6 +179,7 @@ export const githubAuthHandler = catchAsync(async (req, res, next) => {
 
   res.redirect(`${process.env.CLIENT_ORIGIN}/dashboard`);
 });
+
 export const linkedInAuthHandler = catchAsync(async (req, res, next) => {
   if (!req?.user?.email) {
     return next(new AppError("LinkedIn authentication failed", 400));

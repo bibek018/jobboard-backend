@@ -9,7 +9,8 @@ export const userRegisterSchema = z
       .regex(
         /^\+977\d{10}$/,
         "Phone number must start with +977 followed by 10 digits",
-      ),
+      )
+      .optional(),
     password: z
       .string()
       .min(8, "Password must be minimum of 8 letters.")
@@ -62,28 +63,60 @@ export const employerOnboardSchema = z
     description: z
       .string({ required_error: "Description is required" })
       .trim()
-      .min(1, { message: "Description is required" }),
+      .min(1, { message: "Description is required" })
+      .max(300, { message: "Description must not exceed 300 chars." }),
   })
   .strict();
 
+const jsonArrayOfStrings = z.string().transform((value, ctx) => {
+  try {
+    const parsed = JSON.parse(value);
+    if (!Array.isArray(parsed)) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Expected an array",
+      });
+      return z.NEVER;
+    }
+    return parsed;
+  } catch {
+    ctx.addIssue({
+      code: "custom",
+      message: "Expected an array",
+    });
+    return z.NEVER;
+  }
+});
+
 export const candidateOnboardSchema = z
   .object({
-    skills: z
-      .array(z.string().trim().min(1, { message: "Skill cannot be empty" }), {
-        invalid_type_error: "Please provide some skills",
-      })
-      .min(1, { message: "Please provide at least one skill" }),
+    skills: jsonArrayOfStrings.pipe(
+      z
+        .array(z.string().trim().min(1, { message: "Skill cannot be empty" }), {
+          invalid_type_error: "Please provide some skills",
+        })
+        .min(1, { message: "Please provide at least one skill" }),
+    ),
 
-    preferredJobType: z
-      .array(
-        z.string().trim().min(1, { message: "Job type cannot be empty" }),
-        { invalid_type_error: "Please provide your preferred job type." },
-      )
-      .min(1, { message: "Please provide at least one preferred job type." }),
+    preferredJobType: jsonArrayOfStrings.pipe(
+      z
+        .array(
+          z.string().trim().min(1, { message: "Job type cannot be empty" }),
+          { invalid_type_error: "Please provide your preferred job type." },
+        )
+        .min(1, { message: "Please provide at least one preferred job type." }),
+    ),
 
-    preferredLocation: z
-      .string({ required_error: "Preferred job location is required" })
-      .trim()
-      .min(1, { message: "Preferred location is required" }),
+    preferredLocation: jsonArrayOfStrings.pipe(
+      z
+        .array(
+          z
+            .string()
+            .trim()
+            .min(1, { message: "Preferred location cannot be empty" }),
+          { invalid_type_error: "Please provide your preferred location." },
+        )
+        .min(1, { message: "Please provide at least one preferred location." }),
+    ),
   })
   .strict();

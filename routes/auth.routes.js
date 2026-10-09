@@ -2,19 +2,11 @@ import express from "express";
 import {
   userRegisterSchema,
   userLoginSchema,
-  userRoleSetSchema,
-  employerOnboardSchema,
-  candidateOnboardSchema,
 } from "../validators/user.validator.js";
 import {
   createAccount,
   loginAccount,
-  sendProfile,
-  roleSetUser,
-  onboardingEmployeeHandler,
-  onboardingCandidateHandler,
-} from "../controllers/auth.controllers.js";
-import {
+  handleRefresh,
   googleAuthHandler,
   facebookAuthHandler,
   linkedInAuthHandler,
@@ -22,16 +14,13 @@ import {
 } from "../controllers/auth.controllers.js";
 import { validate } from "../middlewares/validate.js";
 import { authLimiter } from "../utils/rateLimiter.js";
-import { authMiddleware } from "../middlewares/authMiddleware.js";
-import { roleMiddleware } from "../middlewares/roleMiddleware.js";
-import { requireRoleSet } from "../middlewares/requireRoleSet.js";
-import { upload } from "../middlewares/upload.js";
+
 import passport from "../utils/passport.js";
 const router = express.Router();
 
 //manual registration route
 router.post(
-  "/v1/register",
+  "/v1/signup",
   authLimiter,
   validate(userRegisterSchema),
   createAccount,
@@ -39,6 +28,8 @@ router.post(
 //login route
 router.post("/v1/login", authLimiter, validate(userLoginSchema), loginAccount);
 
+//Refresh Router
+router.post("/v1/refresh", handleRefresh);
 //OAuth Registration Routes
 router.get(
   "/v1/google",
@@ -100,33 +91,6 @@ router.get(
     session: false,
   }),
   githubAuthHandler,
-);
-
-//Auth Middleware
-router.use(authMiddleware);
-router.get("/v1/me", sendProfile);
-router.patch("/v1/set-role", validate(userRoleSetSchema), roleSetUser);
-router.patch(
-  "/v1/onboarding/employer",
-  requireRoleSet,
-  roleMiddleware("employer"),
-  upload.fields([
-    { name: "companyLogo", maxCount: 1 },
-    { name: "avatar", maxCount: 1 },
-  ]),
-  validate(employerOnboardSchema),
-  onboardingEmployeeHandler,
-);
-router.patch(
-  "/v1/onboarding/candidate",
-  requireRoleSet,
-  roleMiddleware("candidate"),
-  upload.fields([
-    { name: "resume", maxCount: 1 },
-    { name: "avatar", maxCount: 1 },
-  ]),
-  validate(candidateOnboardSchema),
-  onboardingCandidateHandler,
 );
 
 export default router;
