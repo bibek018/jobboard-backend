@@ -66,6 +66,26 @@ export const loginAccount = catchAsync(async (req, res, next) => {
   });
 });
 
+export const logoutHandler = catchAsync(async (req, res, next) => {
+  const userId = req.user._id;
+  const user = await User.findById(userId).select("+refreshToken");
+  if (user) {
+    user.refreshToken = null;
+    await user.save({ validateBeforeSave: false });
+  }
+  const isProduction = process.env.NODE_ENV === "production";
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: isProduction ? true : false,
+    sameSite: isProduction ? "none" : "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    path: "/",
+  });
+  res.status(200).json({
+    success: true,
+    message: "Logged out successfully",
+  });
+});
 export const handleRefresh = catchAsync(async (req, res, next) => {
   const refreshToken = req.cookies.refreshToken;
   if (!refreshToken) {
@@ -75,6 +95,9 @@ export const handleRefresh = catchAsync(async (req, res, next) => {
   const user = await User.findById(payload._id).select("+refreshToken");
   if (!user) {
     return next(new AppError("User does not exits. Please login again", 401));
+  }
+  if (!user.refreshToken) {
+    return next(new AppError("Token does not match", 401));
   }
   const isVerified = await bcrypt.compare(refreshToken, user.refreshToken);
   if (!isVerified) {
@@ -114,6 +137,9 @@ export const googleAuthHandler = catchAsync(async (req, res, next) => {
 
   const isProduction = process.env.NODE_ENV === "production";
   const refreshToken = await generateRefreshToken(user);
+  const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+  user.refreshToken = hashedRefreshToken;
+  await user.save();
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
     sameSite: isProduction ? "none" : "lax",
@@ -121,9 +147,6 @@ export const googleAuthHandler = catchAsync(async (req, res, next) => {
     maxAge: 7 * 24 * 60 * 60 * 1000,
     path: "/",
   });
-
-  user.refreshToken = refreshToken;
-  await user.save();
 
   res.redirect(`${process.env.CLIENT_ORIGIN}/dashboard`);
 });
@@ -137,9 +160,11 @@ export const facebookAuthHandler = catchAsync(async (req, res, next) => {
   if (!user) {
     return next(new AppError("User not found", 404));
   }
-
   const isProduction = process.env.NODE_ENV === "production";
   const refreshToken = await generateRefreshToken(user);
+  const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+  user.refreshToken = hashedRefreshToken;
+  await user.save();
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
     sameSite: isProduction ? "none" : "lax",
@@ -147,9 +172,6 @@ export const facebookAuthHandler = catchAsync(async (req, res, next) => {
     maxAge: 7 * 24 * 60 * 60 * 1000,
     path: "/",
   });
-
-  user.refreshToken = refreshToken;
-  await user.save();
 
   res.redirect(`${process.env.CLIENT_ORIGIN}/dashboard`);
 });
@@ -166,6 +188,9 @@ export const githubAuthHandler = catchAsync(async (req, res, next) => {
 
   const isProduction = process.env.NODE_ENV === "production";
   const refreshToken = await generateRefreshToken(user);
+  const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+  user.refreshToken = hashedRefreshToken;
+  await user.save();
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
     sameSite: isProduction ? "none" : "lax",
@@ -173,9 +198,6 @@ export const githubAuthHandler = catchAsync(async (req, res, next) => {
     maxAge: 7 * 24 * 60 * 60 * 1000,
     path: "/",
   });
-
-  user.refreshToken = refreshToken;
-  await user.save();
 
   res.redirect(`${process.env.CLIENT_ORIGIN}/dashboard`);
 });
@@ -192,6 +214,9 @@ export const linkedInAuthHandler = catchAsync(async (req, res, next) => {
 
   const isProduction = process.env.NODE_ENV === "production";
   const refreshToken = await generateRefreshToken(user);
+  const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+  user.refreshToken = hashedRefreshToken;
+  await user.save();
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
     sameSite: isProduction ? "none" : "lax",
@@ -199,9 +224,6 @@ export const linkedInAuthHandler = catchAsync(async (req, res, next) => {
     maxAge: 7 * 24 * 60 * 60 * 1000,
     path: "/",
   });
-
-  user.refreshToken = refreshToken;
-  await user.save();
 
   res.redirect(`${process.env.CLIENT_ORIGIN}/dashboard`);
 });
