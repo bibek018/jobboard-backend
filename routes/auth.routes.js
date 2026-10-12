@@ -3,9 +3,12 @@ import {
   userRegisterSchema,
   userLoginSchema,
 } from "../validators/user.validator.js";
+import { authMiddleware } from "../middlewares/authMiddleware.js";
+import {sessionMiddleware} from "../middlewares/sessionMiddleware.js"
 import {
   createAccount,
   loginAccount,
+  logoutHandler,
   handleRefresh,
   googleAuthHandler,
   facebookAuthHandler,
@@ -30,6 +33,10 @@ router.post("/v1/login", authLimiter, validate(userLoginSchema), loginAccount);
 
 //Refresh Router
 router.post("/v1/refresh", handleRefresh);
+
+//logout route
+router.post("/v1/logout", authMiddleware, logoutHandler);
+
 //OAuth Registration Routes
 router.get(
   "/v1/google",
@@ -62,15 +69,17 @@ router.get(
   facebookAuthHandler,
 );
 router.get(
-  "/v1/linkedIn",
-  passport.authenticate("linkedIn", {
+  "/v1/linkedin",
+  sessionMiddleware,
+  passport.authenticate("linkedin", {
     scope: ["openid", "profile", "email"],
     session: false,
   }),
 );
 router.get(
-  "/v1/linkedIn/callback",
-  passport.authenticate("linkedIn", {
+  "/v1/linkedin/callback",
+  sessionMiddleware,
+  passport.authenticate("linkedin", {
     failureRedirect: "/register",
     session: false,
   }),

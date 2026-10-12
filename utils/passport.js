@@ -1,4 +1,5 @@
 import passport from "passport";
+import logger from "./logger.js";
 import { User } from "../models/User.js";
 import { Strategy as FaceBookStrategy } from "passport-facebook";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
@@ -15,7 +16,7 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        const email  = profile?.emails?.[0].value;
+        const email = profile?.emails?.[0].value;
         if (!email) {
           return done(
             new Error("Google account is not associated with this profile"),
@@ -86,10 +87,12 @@ passport.use(
       clientID: process.env.FACEBOOK_CLIENTID,
       clientSecret: process.env.FACEBOOK_SECRET,
       callbackURL: `${process.env.SERVER_URI}/api/auth/v1/facebook/callback`,
+      profileFields: ["id", "displayName", "email"],
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
         const email = profile?.emails?.[0]?.value;
+        console.log(profile);
         if (!email) {
           return done(
             new Error("Facebook account is not associated with this profile"),
@@ -115,17 +118,18 @@ passport.use(
     },
   ),
 );
-
 passport.use(
   new LinkedInStrategy(
     {
-      clientID: process.env.LINKED_CLIENTID,
+      clientID: process.env.LINKEDIN_CLIENTID,
       clientSecret: process.env.LINKEDIN_SECRET,
       callbackURL: `${process.env.SERVER_URI}/api/auth/v1/linkedin/callback`,
+      state: true,
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
         const email = profile?.email;
+        logger.info(profile);
         if (!email) {
           return done(
             new Error("LinkedIn account is not associated with this profile"),
