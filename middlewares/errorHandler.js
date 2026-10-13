@@ -1,6 +1,7 @@
 import logger from "../utils/logger.js";
 import multer from "multer";
 export const errorHandler = (err, req, res, next) => {
+  logger.info(err);
   if (err.name === "ValidationError") {
     return res.status(400).json({
       status: 400,
