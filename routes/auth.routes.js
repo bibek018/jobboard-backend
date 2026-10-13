@@ -4,7 +4,6 @@ import {
   userLoginSchema,
 } from "../validators/user.validator.js";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
-import {sessionMiddleware} from "../middlewares/sessionMiddleware.js"
 import {
   createAccount,
   loginAccount,
@@ -70,7 +69,6 @@ router.get(
 );
 router.get(
   "/v1/linkedin",
-  sessionMiddleware,
   passport.authenticate("linkedin", {
     scope: ["openid", "profile", "email"],
     session: false,
@@ -78,7 +76,6 @@ router.get(
 );
 router.get(
   "/v1/linkedin/callback",
-  sessionMiddleware,
   passport.authenticate("linkedin", {
     failureRedirect: "/register",
     session: false,
