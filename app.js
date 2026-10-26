@@ -16,7 +16,7 @@ const app = express();
 app.use(express.json());
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: `${process.env.CILENT_ORIGIN}`,
     credentials: true,
   }),
 );

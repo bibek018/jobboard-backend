@@ -13,7 +13,9 @@ import {
   getMyApplications,
   getJobApplicants,
   changeApplicationStatus,
-  getJobsCount
+  getJobsCount,
+  getJobDetailPublic,
+  getMineJobDetail,
 } from "../controllers/jobs.controllers.js";
 
 import {
@@ -35,6 +37,7 @@ const router = express.Router();
 
 // Public
 router.get("/v1", validate(getJobSchema, "query"), getJobsForPublic);
+router.get("/v1/detail/:id", getJobDetailPublic);
 router.get("/v1/jobs-count", getJobsCount);
 // Protected
 router.use(authMiddleware);
@@ -62,6 +65,7 @@ router.get(
   getMyJobs,
 );
 
+router.get("/v1/mine/:id", getMineJobDetail);
 router.delete("/v1/:id", roleMiddleware("employer"), deleteDraftedJob);
 
 // Candidate — Applications

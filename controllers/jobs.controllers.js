@@ -1,3 +1,4 @@
+import { response } from "express";
 import { Application } from "../models/Application.js";
 import { Job } from "../models/Job.js";
 import { AppError } from "../utils/AppError.js";
@@ -47,7 +48,8 @@ export const getJobsForPublic = catchAsync(async (req, res, next) => {
     Job.find(filter)
       .skip(skip)
       .limit(limit)
-      .sort({ [sort]: sortOrder }),
+      .sort({ [sort]: sortOrder })
+      .populate("postedBy", "name profile.companyName profile.companyLogo"),
     Job.countDocuments(filter),
   ]);
 
@@ -127,7 +129,7 @@ export const deleteDraftedJob = catchAsync(async (req, res, next) => {
   if (!job) {
     return next(new AppError("Job does not exist", 404));
   }
-  if (job.status !== "draft") {
+  if (job.status !== "Draft") {
     return next(
       new AppError(
         "Published jobs cannot be deleted. Try closing the job instead.",
@@ -182,15 +184,8 @@ export const getMyApplications = catchAsync(async (req, res, next) => {
   const applications = await Application.find({
     candidateId: req.user._id,
   })
-    // .populate("jobId", "title location salary type")
-    .populate({
-      path: "jobId",
-      select: "title location salary type postedBy",
-      populate: {
-        path: "postedBy",
-        select: "companyName",
-      },
-    })
+    .populate("jobId", "title location salary type postedBy")
+    .populate("postedBy", "name profile.companyName profile.companyLogo")
     .skip(skip)
     .limit(limit)
     .sort({
@@ -228,7 +223,7 @@ export const getJobApplicants = catchAsync(async (req, res, next) => {
   const skip = (page - 1) * limit;
   const sortOrder = sort === "newest" ? -1 : 1;
   const applicants = await Application.find({ jobId })
-    .populate("candidateId", "name email")
+    .populate("candidateId", "name email avatarUrl profile.skills")
     .skip(skip)
     .limit(limit)
     .sort({
@@ -276,10 +271,40 @@ export const changeApplicationStatus = catchAsync(async (req, res, next) => {
 });
 
 export const getJobsCount = catchAsync(async (req, res, next) => {
-  const totalLiveJobs = await Job.countDocuments({});
+  const totalLiveJobs = await Job.countDocuments({ status: "Open" });
   res.status(200).json({
-    sucess: true,
+    success: true,
     message: "Successfully fetched live jobs",
     totalLiveJobs,
+  });
+});
+
+export const getJobDetailPublic = catchAsync(async (req, res, next) => {
+  const job = await Job.findOne({
+    _id: req.params.id,
+    status: "Open",
+  }).populate("postedBy", "name profile.companyName profile.companyLogo");
+  if (!job) {
+    return next(new AppError("Resource does not exist", 404));
+  }
+  res.status(200).json({
+    success: true,
+    message: "Job details fetched successfully",
+    job,
+  });
+});
+
+export const getMineJobDetail = catchAsync(async (req, res, next) => {
+  const job = await Job.findOne({
+    _id: req.params.id,
+    postedBy: req.user._id,
+  }).populate("postedBy", "name profile.companyName profile.companyLogo ");
+  if (!job) {
+    return next(new AppError("Resource does not exist", 404));
+  }
+  res.status(200).json({
+    success: true,
+    message: "Job details fetched successfully",
+    job,
   });
 });

@@ -1,6 +1,7 @@
 import { AppError } from "../utils/AppError.js";
 import { catchAsync } from "../utils/catchAsync.js";
 import { User } from "../models/User.js";
+import { generateAccessToken } from "../utils/Token.js";
 
 //Send profile details like role, onboarding completion etc.
 export const sendProfile = catchAsync(async (req, res, next) => {
@@ -20,10 +21,12 @@ export const roleSetUser = catchAsync(async (req, res, next) => {
   }
   user.role = role;
   await user.save();
+  const accessToken = await generateAccessToken(user);
   res.status(200).json({
     success: true,
     message: "User role saved successfully",
     user,
+    accessToken,
   });
 });
 

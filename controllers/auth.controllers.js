@@ -3,9 +3,6 @@ import { User } from "../models/User.js";
 import { AppError } from "../utils/AppError.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/Token.js";
 import bcrypt from "bcrypt";
-import { cookies } from "supertest";
-import { success } from "zod";
-import { referrerPolicy } from "helmet";
 import jwt from "jsonwebtoken";
 
 export const createAccount = catchAsync(async (req, res, next) => {

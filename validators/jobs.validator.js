@@ -16,7 +16,7 @@ export const jobCreateSchema = z
       })
       .trim()
       .min(50, "Job description must be at least 50 characters.")
-      .max(350, "Job description must not exceed 350 characters."),
+      .max(2000, "Job description must not exceed 2000 characters."),
 
     location: z
       .string({
