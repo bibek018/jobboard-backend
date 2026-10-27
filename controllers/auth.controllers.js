@@ -4,6 +4,7 @@ import { AppError } from "../utils/AppError.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/Token.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import logger from "../utils/logger.js";
 
 export const createAccount = catchAsync(async (req, res, next) => {
   const { name, email, password, phone_no } = req.validated.body;
@@ -35,7 +36,7 @@ export const createAccount = catchAsync(async (req, res, next) => {
 export const loginAccount = catchAsync(async (req, res, next) => {
   const { email, password } = req.validated.body;
   const user = await User.findOne({ email }).select("+password");
-  if (!user) {
+  if (!user || !user.password) {
     return next(new AppError("Invalid email or password", 401));
   }
   const isValid = await bcrypt.compare(password, user.password);
